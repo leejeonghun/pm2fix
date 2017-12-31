@@ -13,7 +13,7 @@ HFONT WINAPI hook_createfontindirecta(CONST LOGFONTA *lplf) {
   if (lf_ptr != nullptr) {
     strcpy_s(lf_ptr->lfFaceName, "Malgun Gothic");
     lf_ptr->lfHeight += HEIGHT_CORRECTION;
-    lf_ptr->lfWeight = FW_BOLD;
+    lf_ptr->lfWeight = FW_SEMIBOLD;
   }
 
   return createfontindirecta.call_origin<decltype(&CreateFontIndirectA)>(lplf);

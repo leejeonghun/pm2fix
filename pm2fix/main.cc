@@ -6,6 +6,7 @@
 #include "resource.h"
 #include "uninst_reg.h"
 #include "resource_gz.h"
+#include "file_desc.h"
 
 #pragma comment(lib, "shlwapi")
 
@@ -14,6 +15,7 @@ namespace {
 const wchar_t CAPTION_MSG[] = L"pm2fix";
 const wchar_t FILE_HOOK_DLL[] = L"ddraw.dll";
 const wchar_t REG_UNINST_KEY[] = L"Steam App 523000";
+const wchar_t DLL_FILE_DESC[] = L"pm2fix core";
 
 }  // namespace
 
@@ -23,6 +25,7 @@ enum {
   ERR_GAME_NOT_EXIST = -1,
   ERR_DLL_CREATION_FAILED = -2,
   ERR_DLL_DELETION_FAILED = -3,
+  ERR_DLL_CORRUPTED = -4,
   ERR_UNKNOWN = -99,
 };
 
@@ -31,8 +34,12 @@ int check_retcode(int retcode);
 int APIENTRY wWinMain(HINSTANCE hinstance, HINSTANCE, LPWSTR, int) {
   int retcode = ERR_UNKNOWN;
 
+  BOOL wow64proc = FALSE;
+  bool use_64bit_key = IsWow64Process(GetCurrentProcess(), &wow64proc) != FALSE &&
+    wow64proc != FALSE;
+
   std::wstring inst_path;
-  uninst_reg uninst(REG_UNINST_KEY, true);
+  uninst_reg uninst(REG_UNINST_KEY, use_64bit_key);
   if (uninst.chk_exist()) {
     inst_path = uninst.get_instloc();
   }
@@ -43,7 +50,11 @@ int APIENTRY wWinMain(HINSTANCE hinstance, HINSTANCE, LPWSTR, int) {
     wchar_t dll_path[MAX_PATH] = { 0 };
     PathCombine(dll_path, inst_path.c_str(), FILE_HOOK_DLL);
     if (PathFileExists(dll_path) != FALSE) {
-      retcode = DeleteFile(dll_path) ? SUCCESS_UNINSTALL : ERR_DLL_DELETION_FAILED;
+      if (file_desc(dll_path).get() == DLL_FILE_DESC) {
+        retcode = DeleteFile(dll_path) ? SUCCESS_UNINSTALL : ERR_DLL_DELETION_FAILED;
+      } else {
+        retcode = ERR_DLL_CORRUPTED;
+      }
     } else {
       retcode = resource_gz(IDR_COREDLL, hinstance).extract(dll_path) ?
         SUCCESS_INSTALL : ERR_DLL_CREATION_FAILED;
@@ -63,17 +74,21 @@ int check_retcode(int retcode) {
     msg = L"패치를 적용 완료 하였습니다.";
     break;
   case ERR_GAME_NOT_EXIST:
-    msg = L"게임 설치 정보를 찾을 수 없습니다.\r\n게임 설치 후 실행해 주십시오.";
+    msg = L"게임 설치 정보를 찾을 수 없습니다.\r\n게임 설치 후 실행해 주십시오.\r\n"
+      L"이미 설치된 경우라면 재설치 후 다시 시도해 보십시오.";
     break;
   case ERR_DLL_CREATION_FAILED:
     msg = IsUserAnAdmin() ? 
       L"패치 적용에 실패 하였습니다." :
-      L"패치 적용에 실패 하였습니다.\r\n관리자 권한으로 다시 시도해 보십시오.";
+      L"패치 적용에 실패 하였습니다.\r\n관리자 권한으로 실행하여 다시 시도해 보십시오.";
     break;
   case ERR_DLL_DELETION_FAILED:
     msg = IsUserAnAdmin() ?
       L"패치 제거에 실패 하였습니다.\r\n게임이 실행 중이면 종료 후 다시 시도해 보십시오." :
-      L"패치 제거에 실패 하였습니다.\r\n관리자 권한으로 다시 시도해 보십시오.";
+      L"패치 제거에 실패 하였습니다.\r\n관리자 권한으로 실행하여 다시 시도해 보십시오.";
+    break;
+  case ERR_DLL_CORRUPTED:
+    msg = L"패치 제거에 실패 하였습니다.\r\n게임 삭제 후 재설치하여 다시 시도해 보십시오.";
     break;
   case ERR_UNKNOWN:
   default:

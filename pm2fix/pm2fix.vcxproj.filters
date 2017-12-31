@@ -26,6 +26,9 @@
     <ClCompile Include="resource_gz.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="file_desc.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="precompile.h">
@@ -44,6 +47,9 @@
       <Filter>Resource Files</Filter>
     </ClInclude>
     <ClInclude Include="resource_gz.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="file_desc.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
