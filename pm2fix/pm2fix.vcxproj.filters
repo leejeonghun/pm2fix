@@ -34,12 +34,6 @@
     <ClInclude Include="precompile.h">
       <Filter>Precompiled Header</Filter>
     </ClInclude>
-    <ClInclude Include="encrypted_string.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="dll_module.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="uninst_reg.h">
       <Filter>Source Files</Filter>
     </ClInclude>

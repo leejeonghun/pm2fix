@@ -105,8 +105,6 @@
     <ClCompile Include="file_desc.cc" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="dll_module.h" />
-    <ClInclude Include="encrypted_string.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="resource_gz.h" />
     <ClInclude Include="uninst_reg.h" />
